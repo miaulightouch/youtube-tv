@@ -1,7 +1,7 @@
 {
   "name": "youtube-tv",
   "productName": "youtube-tv",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Youtube TV on Desktop",
   "main": ".vite/build/main.js",
   "scripts": {
