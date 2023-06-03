@@ -30,7 +30,11 @@ jobs:
           node-version: lts/*
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          npm ci
+          ls -al node_modules/electron/dist/Electron.app/Contents/MacOS/../Frameworks/Electron Framework.framework
+          npm run fetch
+          npm run icon
 
       - name: Build
         if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
@@ -55,12 +59,11 @@ jobs:
           node-version: lts/*
 
       - name: Install Dependencies
-        env:
-          DISPLAY: ':99'
         run: |
           sudo apt-get install -y xvfb
-          xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
           npm ci
+          xvfb-run npm run fetch
+          npm run icon
 
       - name: Build
         if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
@@ -69,7 +72,6 @@ jobs:
       - name: Publish Release
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         env:
-          DISPLAY: ':99'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
 

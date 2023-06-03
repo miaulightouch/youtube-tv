@@ -9,7 +9,6 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "install": "npm run fetch && npm run icon",
     "fetch": "electron scripts/fetch.js",
     "icon": "electron-icon-maker-forge -i temp/icon.png -n icon"
   },
