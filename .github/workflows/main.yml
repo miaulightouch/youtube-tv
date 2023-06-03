@@ -57,6 +57,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: lts/*
+          cache: 'npm'
 
       - name: Install Dependencies
         run: |
