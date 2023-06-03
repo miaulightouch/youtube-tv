@@ -18,7 +18,6 @@ module.exports = {
           owner: 'miaulightouch',
           name: 'youtube-tv',
         },
-        prerelease: true
       }
     }
   ],
