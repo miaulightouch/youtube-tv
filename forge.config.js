@@ -18,7 +18,6 @@ module.exports = {
           owner: 'miaulightouch',
           name: 'youtube-tv',
         },
-        authToken: process.env.GITHUB_TOKEN,
         prerelease: true
       }
     }

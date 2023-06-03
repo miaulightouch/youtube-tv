@@ -32,22 +32,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Check for GitHub Labels
-        id: seekingTesters
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          if [[ -n "$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -s "${{ github.event.pull_request.url }}" | jq -e '.labels[] | select(.name == "Seeking Testers")')" ]] {
-            print 'found=true' >> $GITHUB_OUTPUT
-          } else {
-            print 'found=false' >> $GITHUB_OUTPUT
-          }
-
       - name: Build
-        if: ${{ success() && (github.event_name == 'pull_request' || steps.seekingTesters.outputs.found == 'false') }}
+        if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
         run: npm run make
 
       - name: Publish Release
-        if: ${{ success() && (github.event_name != 'pull_request' || steps.seekingTesters.outputs.found == 'true') }}
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
 
   linux_build:
@@ -63,25 +55,22 @@ jobs:
           node-version: lts/*
 
       - name: Install Dependencies
-        run: npm ci
-
-      - name: Check for GitHub Labels
-        id: seekingTesters
-        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          DISPLAY: ':99'
         run: |
-          ## GITHUB LABEL SCRIPT
-          if [[ -n "$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -s "${{ github.event.pull_request.url }}" | jq -e '.labels[] | select(.name == "Seeking Testers")')" ]]; then
-            echo 'found=true' >> $GITHUB_OUTPUT
-          else
-            echo 'found=false' >> $GITHUB_OUTPUT
-          fi
+          sudo apt-get install -y xvfb
+          xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          npm ci
 
       - name: Build
-        if: ${{ success() && (github.event_name == 'pull_request' || steps.seekingTesters.outputs.found == 'false') }}
+        if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
         run: npm run make
 
       - name: Publish Release
-        if: ${{ success() && (github.event_name != 'pull_request' || steps.seekingTesters.outputs.found == 'true') }}
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        env:
+          DISPLAY: ':99'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
 
   windows_build:
@@ -99,31 +88,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Check for GitHub Labels
-        id: seekingTesters
-        working-directory: ${{ github.workspace }}/plugin
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          ## GITHUB LABEL SCRIPT
-          $LabelFound = try {
-            $Params = @{
-              Authentication = 'Bearer'
-              Token = (ConvertTo-SecureString '${{ secrets.GITHUB_TOKEN }}' -AsPlainText)
-              Uri = '${{ github.event.pull_request.url }}'
-              UseBasicParsing = $true
-            }
-
-            (Invoke-RestMethod @Params).labels.name.contains('Seeking Testers')
-          } catch {
-            $false
-          }
-
-          "found=$(([string]${LabelFound}).ToLower())" >> $env:GITHUB_OUTPUT
-
       - name: Build
-        if: ${{ success() && (github.event_name == 'pull_request' || steps.seekingTesters.outputs.found != 'true') }}
+        if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
         run: npm run make
 
       - name: Publish Release
-        if: ${{ success() && (github.event_name != 'pull_request' || steps.seekingTesters.outputs.found == 'true') }}
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
